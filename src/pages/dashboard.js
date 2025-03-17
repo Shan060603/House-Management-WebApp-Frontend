@@ -4,29 +4,66 @@ import {
   Text,
   Grid,
   GridItem,
-  Avatar,
-  IconButton,
+  Link,
+  Button,
 } from "@chakra-ui/react";
 import { FaFacebook, FaTwitter, FaEye, FaComments } from "react-icons/fa";
-import { IoMdNotifications } from "react-icons/io";
+import { useRouter } from "next/router";
 
 export default function Dashboard() {
+  const router = useRouter();
+
   return (
     <Flex>
       {/* Sidebar */}
-      <Box w="250px" bg="purple.700" color="white" p="4" minH="100vh">
+      <Flex
+        w="250px"
+        bg="purple.700"
+        color="white"
+        p="4"
+        minH="100vh"
+        direction="column" // Stack vertically
+      >
         <Text fontSize="24px" fontWeight="bold" mb="4">
           Family Hub
         </Text>
-        <Text mb="2">Dashboard</Text>
-        <Text mb="2">Tasks</Text>
-        <Text mb="2">Appliance</Text>
-        <Text mb="2">Bill</Text>
-        <Text mb="2">Expense</Text>
-        <Text mb="2">Inventory</Text>
-        <Text mb="2">Calendar</Text>
-        <Text mb="2">Users</Text>
-      </Box>
+        {[
+          { label: "Dashboard", href: "dashboard" },
+          { label: "Tasks", href: "task" },
+          { label: "Appliance", href: "appliance" },
+          { label: "Bill", href: "bill" },
+          { label: "Expenses", href: "expense" },
+          { label: "Inventory", href: "inventory" },
+          { label: "Calendar", href: "calendar" },
+          { label: "Users", href: "user" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            w="full"
+            display={"block"}
+            px={5}
+            py={3}
+            color={"white"}
+            _active={{ bg: "teal.500", color: "white" }}
+            _hover={{ bg: "teal.500", color: "white" }}
+            href={item.href}
+          >
+            {item.label}
+          </Link>
+        ))}
+
+        {/* Logout Button at the Bottom */}
+        <Button
+          onClick={() => router.push("/login")}
+          bg="red.500"
+          color="white"
+          mt="auto" // Push to the bottom
+          w="full"
+          _hover={{ bg: "red.600" }}
+        >
+          Logout
+        </Button>
+      </Flex>
 
       {/* Main Content */}
       <Box flex="1" p="4" bg="gray.50">
@@ -74,7 +111,6 @@ export default function Dashboard() {
           <Text fontSize="lg" fontWeight="bold" mb="4">
             Overview
           </Text>
-          {/* Sample Data Overview */}
           <Flex justify="space-between">
             <Box>
               <Text fontSize="2xl">54</Text>
