@@ -42,7 +42,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3001/login",
+        "http://localhost:5000/login",
         formData
       );
       setMessage("Login successful");

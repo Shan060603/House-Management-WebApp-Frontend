@@ -47,7 +47,7 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:3001/register",
+        "http://localhost:5000/register",
         formData
       );
       setMessage(response.data.message || "Registration successful");
