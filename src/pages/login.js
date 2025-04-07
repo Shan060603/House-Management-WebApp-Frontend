@@ -83,7 +83,7 @@ export default function LoginPage() {
           <Box bg="blue.500" p={4} borderRadius="md" textAlign="center">
             <Flex justifyContent="center">
               <Text color="white" fontSize="24px" fontWeight="bold">
-                Welcome Back Silveo!
+                Welcome Back!
               </Text>
             </Flex>
           </Box>

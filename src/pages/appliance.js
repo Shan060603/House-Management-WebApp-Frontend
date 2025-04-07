@@ -15,6 +15,7 @@ import {
   GridItem,
   Link,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import {
   FaPlus,
@@ -33,6 +34,7 @@ export default function AppliancePage() {
   const [appliances, setAppliances] = useState([]);
   const [selectedAppliance, setSelectedAppliance] = useState(null);
   const router = useRouter();
+  const toast = useToast(); // Initialize the toast hook at the top level of the component
 
   const {
     isOpen: isAddOpen,
@@ -58,10 +60,18 @@ export default function AppliancePage() {
 
   const fetchAppliances = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/appliances");
-      setAppliances(response.data);
+      const response = await axios.get("http://localhost:3001/getAppliances");
+      setAppliances(response.data); // Assuming response.data contains the array of appliances
     } catch (error) {
       console.error("Error fetching appliances:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch appliances. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom-left", // You can adjust the position as needed
+      });
     }
   };
 

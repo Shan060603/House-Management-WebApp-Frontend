@@ -28,35 +28,33 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!name || !dateBought) {
+      toast({
+        title: "Error",
+        description: "Name and Date Bought are required.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
     try {
-      const response = await axios.post("http://localhost:3001/appliances", {
+      const response = await axios.post("http://localhost:3001/addAppliances", {
         name,
         brand,
         dateBought,
         nextMaintenanceDate,
       });
 
-      if (response.status === 201) {
-        fetchAppliances();
-        toast({
-          title: "Success",
-          description: "Appliance added successfully",
-          status: "success",
-          duration: 5000,
-          isClosable: true,
-        });
-        onClose();
-
-        setName("");
-        setBrand("");
-        setDateBought("");
-        setNextMaintenanceDate("");
-      }
+      console.log("Appliance added successfully:", response.data);
+      fetchAppliances(); // Refresh appliance list after adding
+      onClose(); // Close the modal or form
     } catch (error) {
       console.error("Error adding appliance:", error);
       toast({
         title: "Error",
-        description: error.response?.data?.message || "An error occurred",
+        description: "Error adding appliance. Please try again.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -65,34 +63,30 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered>
+    <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
+        <ModalHeader>Add Appliance</ModalHeader>
+        <ModalCloseButton />
         <form onSubmit={handleSubmit}>
-          <ModalHeader>Add New Appliance</ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Name</FormLabel>
+            <FormControl isRequired>
+              <FormLabel>Appliance Name</FormLabel>
               <Input
-                type="text"
+                placeholder="Enter appliance name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter appliance name"
               />
             </FormControl>
-
-            <FormControl mb={4}>
+            <FormControl mt={4}>
               <FormLabel>Brand</FormLabel>
               <Input
-                type="text"
+                placeholder="Enter brand"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="Enter appliance brand"
               />
             </FormControl>
-
-            <FormControl mb={4} isRequired>
+            <FormControl mt={4} isRequired>
               <FormLabel>Date Bought</FormLabel>
               <Input
                 type="date"
@@ -100,8 +94,7 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
                 onChange={(e) => setDateBought(e.target.value)}
               />
             </FormControl>
-
-            <FormControl mb={4}>
+            <FormControl mt={4}>
               <FormLabel>Next Maintenance Date</FormLabel>
               <Input
                 type="date"
@@ -110,14 +103,11 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
               />
             </FormControl>
           </ModalBody>
-
           <ModalFooter>
             <Button colorScheme="blue" mr={3} type="submit">
-              Save
+              Add
             </Button>
-            <Button variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
+            <Button onClick={onClose}>Cancel</Button>
           </ModalFooter>
         </form>
       </ModalContent>
