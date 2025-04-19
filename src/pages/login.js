@@ -37,20 +37,25 @@ export default function LoginPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://localhost:3001/login",
-        formData
-      );
-      setMessage("Login successful");
-      setTimeout(() => router.push("/dashboard"), 1000);
-    } catch (error) {
-      setError(error.response?.data?.message || "Failed to login");
-    }
-  };
+  // In your login handler function
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await axios.post(
+      "http://localhost:3001/login",
+      formData
+    );
+    
+    // Store user data in localStorage
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    setMessage("Login successful");
+    setTimeout(() => router.push("/dashboard"), 1000);
+  } catch (error) {
+    setError(error.response?.data?.message || "Failed to login");
+  }
+};
+
 
   return (
     <>
@@ -147,7 +152,7 @@ export default function LoginPage() {
               colorScheme="blue"
               onClick={() => router.push("/register")}
             >
-              Don't have an account? Sign Up
+              Don&apos;t have an account? Sign Up
             </Button>
           </VStack>
 

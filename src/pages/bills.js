@@ -18,14 +18,14 @@ import {
 import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "axios";
-import AddTask from "@/components/AddTask";
-import EditTask from "@/components/EditTask";
-import DeleteTask from "@/components/DeleteTask";
+import AddBill from "@/components/AddBill";
+import EditBill from "@/components/EditBill";
+import DeleteBill from "@/components/DeleteBill";
 
-export default function TaskPage() {
+export default function BillPage() {
   const router = useRouter();
-  const [tasks, setTasks] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [bills, setBills] = useState([]);
+  const [selectedBill, setSelectedBill] = useState(null);
 
   // Modal state controls
   const {
@@ -47,27 +47,31 @@ export default function TaskPage() {
   } = useDisclosure();
 
   useEffect(() => {
-    fetchTasks();
+    fetchBills();
   }, []);
 
-  const fetchTasks = async () => {
+  const fetchBills = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/gettasks"); // ✅ Updated port
-      setTasks(response.data);
+      const response = await axios.get("http://localhost:3001/bills");
+      console.log("Bills response:", response.data);
+      setBills(response.data);
     } catch (error) {
-      console.error("Error fetching tasks:", error);
+      console.error("Error fetching bills:", error);
     }
   };
+  
+  
+  
 
-  // Open Edit Modal and set the selected task
-  const handleEdit = (task) => {
-    setSelectedTask(task);
+  // Open Edit Modal and set the selected bill
+  const handleEdit = (bill) => {
+    setSelectedBill(bill);
     onEditOpen();
   };
 
-  // Open Delete Modal and set the selected task ID
-  const handleDelete = (task) => {
-    setSelectedTask(task);
+  // Open Delete Modal and set the selected bill ID
+  const handleDelete = (bill) => {
+    setSelectedBill(bill);
     onDeleteOpen();
   };
 
@@ -125,12 +129,19 @@ export default function TaskPage() {
         {/* Header */}
         <Flex justify="space-between" mb="6" align="center">
           <Text fontSize="2xl" fontWeight="bold">
-            Tasks
+            Bills
           </Text>
+          <Button
+            leftIcon={<FaPlus />}
+            colorScheme="blue"
+            onClick={onAddOpen}
+          >
+            Add Bill
+          </Button>
         </Flex>
 
-        {/* Tasks List */}
-        {["Pending", "Completed"].map((status) => (
+        {/* Bills List */}
+        {["Pending", "Paid"].map((status) => (
           <Box key={status} mb="6">
             <Text fontSize="lg" fontWeight="bold" mb="3">
               {status}
@@ -138,32 +149,45 @@ export default function TaskPage() {
             <Table variant="simple" bg="white" boxShadow="md" borderRadius="md">
               <Thead>
                 <Tr>
-                  <Th>Title</Th>
-                  <Th>Description</Th>
+                  <Th>Bill Type</Th>
+                  <Th>Amount</Th>
                   <Th>Due Date</Th>
+                  <Th>Who Paid</Th>
                   <Th>Status</Th>
                   <Th>Actions</Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {tasks
-                  .filter((task) => task.status === status)
-                  .map((task) => (
-                    <Tr key={task._id}>
-                      <Td>{task.title}</Td>
-                      <Td>{task.description || "N/A"}</Td>
+                {bills
+                  .filter((bill) => bill.status === status)
+                  .map((bill) => (
+                    <Tr key={bill._id}>
+                      <Td>{bill.billType}</Td>
+                      <Td>₱{bill.amount.toFixed(2)}</Td>
                       <Td>
-                        {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString()
+                        {bill.dueDate
+                          ? new Date(bill.dueDate).toLocaleDateString()
                           : "No Due Date"}
                       </Td>
                       <Td>
+  {bill.userDetails ? 
+    (bill.userDetails.name || bill.userDetails.email) : 
+    (typeof bill.userId === 'object' ? 
+      (bill.userId.fullName || bill.userId.email || "No Name Set") : 
+      (bill.userId || "Unknown User"))
+  }
+</Td>
+
+
+
+
+                      <Td>
                         <Badge
                           colorScheme={
-                            task.status === "Completed" ? "green" : "yellow"
+                            bill.status === "Paid" ? "green" : "red"
                           }
                         >
-                          {task.status}
+                          {bill.status}
                         </Badge>
                       </Td>
                       <Td>
@@ -172,13 +196,13 @@ export default function TaskPage() {
                             icon={<FaEdit />}
                             colorScheme="blue"
                             size="sm"
-                            onClick={() => handleEdit(task)}
+                            onClick={() => handleEdit(bill)}
                           />
                           <IconButton
                             icon={<FaTrash />}
                             colorScheme="red"
                             size="sm"
-                            onClick={() => handleDelete(task)}
+                            onClick={() => handleDelete(bill)}
                           />
                         </Flex>
                       </Td>
@@ -191,27 +215,27 @@ export default function TaskPage() {
       </Box>
 
       {/* Modals */}
-      <AddTask
+      <AddBill
         isOpen={isAddOpen}
         onClose={onAddClose}
-        fetchTasks={fetchTasks}
+        fetchBills={fetchBills}
       />
 
-      {selectedTask && (
-        <EditTask
+      {selectedBill && (
+        <EditBill
           isOpen={isEditOpen}
           onClose={onEditClose}
-          task={selectedTask}
-          fetchTasks={fetchTasks}
+          bill={selectedBill}
+          fetchBills={fetchBills}
         />
       )}
 
-      {selectedTask && (
-        <DeleteTask
+      {selectedBill && (
+        <DeleteBill
           isOpen={isDeleteOpen}
           onClose={onDeleteClose}
-          taskId={selectedTask._id}
-          fetchTasks={fetchTasks}
+          billId={selectedBill._id}
+          fetchBills={fetchBills}
         />
       )}
     </Flex>

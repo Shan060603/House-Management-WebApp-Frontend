@@ -11,20 +11,20 @@ import {
   } from "@chakra-ui/react";
   import axios from "axios";
   
-  export default function DeleteAppliance({ isOpen, onClose, applianceId, fetchAppliances }) {
+  export default function DeleteBill({ isOpen, onClose, billId, fetchBills }) {
     const toast = useToast();
   
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `http://localhost:3001/deleteAppliances/${applianceId}`
+          `http://localhost:3001/deleteBills/${billId}`
         );
         
         if (response.status === 200) {
-          fetchAppliances(); // Refresh the appliance list
+          fetchBills(); // Refresh the bills list
           toast({
             title: "Success",
-            description: "Appliance deleted successfully",
+            description: "Bill deleted successfully",
             status: "success",
             duration: 5000,
             isClosable: true,
@@ -32,10 +32,10 @@ import {
           onClose(); // Close modal after successful deletion
         }
       } catch (error) {
-        console.error("Error deleting appliance:", error);
+        console.error("Error deleting bill:", error);
         toast({
           title: "Error",
-          description: error.response?.data?.message || "Failed to delete appliance",
+          description: error.response?.data?.message || "Failed to delete bill",
           status: "error",
           duration: 5000,
           isClosable: true,
@@ -47,9 +47,9 @@ import {
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Delete Appliance</ModalHeader>
+          <ModalHeader>Delete Bill</ModalHeader>
           <ModalBody>
-            <Text>Are you sure you want to delete this appliance? This action cannot be undone.</Text>
+            <Text>Are you sure you want to delete this bill? This action cannot be undone.</Text>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="red" mr={3} onClick={handleDelete}>

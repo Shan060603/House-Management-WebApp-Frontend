@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Modal,
@@ -11,19 +11,27 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useDisclosure,
   useToast,
-  Select,
-  Flex,
-  Box,
 } from "@chakra-ui/react";
 import axios from "axios";
+
 export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
   const [dateBought, setDateBought] = useState("");
   const [nextMaintenanceDate, setNextMaintenanceDate] = useState("");
   const toast = useToast();
+
+  // Reset form fields when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Clear form when modal opens
+      setName("");
+      setBrand("");
+      setDateBought("");
+      setNextMaintenanceDate("");
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

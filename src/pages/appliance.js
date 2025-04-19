@@ -29,6 +29,7 @@ import axios from "axios";
 import AddAppliance from "@/components/AddAppliance";
 import EditAppliance from "@/components/EditAppliance";
 import DeleteAppliance from "@/components/DeleteAppliance";
+import { useCallback } from "react";
 
 export default function AppliancePage() {
   const [appliances, setAppliances] = useState([]);
@@ -53,12 +54,7 @@ export default function AppliancePage() {
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
   } = useDisclosure();
-
-  useEffect(() => {
-    fetchAppliances();
-  }, []);
-
-  const fetchAppliances = async () => {
+  const fetchAppliances = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:3001/getAppliances");
       setAppliances(response.data); // Assuming response.data contains the array of appliances
@@ -73,7 +69,13 @@ export default function AppliancePage() {
         position: "bottom-left", // You can adjust the position as needed
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchAppliances();
+  }, [fetchAppliances]);
+
+  // Removed duplicate fetchAppliances function
 
   const handleEdit = (appliance) => {
     setSelectedAppliance(appliance);
@@ -103,8 +105,7 @@ export default function AppliancePage() {
           { label: "Dashboard", href: "/dashboard" },
           { label: "Tasks", href: "/task" },
           { label: "Appliance", href: "/appliance" },
-          { label: "Bill", href: "/bill" },
-          { label: "Expenses", href: "/expense" },
+          { label: "Bill", href: "/bills" },
           { label: "Inventory", href: "/inventory" },
           { label: "Calendar", href: "/calendar" },
           { label: "Users", href: "/user" },
