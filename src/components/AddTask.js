@@ -31,7 +31,8 @@ export default function AddTask({ fetchTasks }) {
     e.preventDefault(); // Prevent default form submission behavior
 
     try {
-      const response = await axios.post("http://localhost:3001/addTasks", {
+      const response = await axios.post("https://house-management-webapp-backend.onrender.com/addTasks", {
+
         title,
         description,
         dueDate,

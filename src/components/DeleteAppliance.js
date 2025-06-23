@@ -17,8 +17,9 @@ import {
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `http://localhost:3001/deleteAppliances/${applianceId}`
-        );
+  `https://house-management-webapp-backend.onrender.com/deleteAppliances/${applianceId}`
+);
+
         
         if (response.status === 200) {
           fetchAppliances(); // Refresh the appliance list

@@ -48,7 +48,7 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:3001/addAppliances", {
+      const response = await axios.post("https://house-management-webapp-backend.onrender.com/addAppliances", {
         name,
         brand,
         dateBought,

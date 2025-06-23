@@ -46,10 +46,11 @@ export default function RegisterPage() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "http://localhost:3001/register",
-        formData
-      );
+     const response = await axios.post(
+  "https://house-management-webapp-backend.onrender.com/register",
+  formData
+);
+
       setMessage(response.data.message || "Registration successful");
       setTimeout(() => router.push("/"), 1000);
     } catch (error) {

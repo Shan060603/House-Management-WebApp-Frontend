@@ -45,9 +45,10 @@ export default function EditTask({ isOpen, onClose, task, fetchTasks }) {
     if (!task) return;
     try {
       const response = await axios.put(
-        `http://localhost:3001/updateTasks/${task._id}`,
-        formData
-      );
+  `https://house-management-webapp-backend.onrender.com/updateTasks/${task._id}`,
+  formData
+);
+
       if (response.status === 200) {
         fetchTasks(); // Refresh the task list
         toast({

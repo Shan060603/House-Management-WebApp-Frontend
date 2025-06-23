@@ -67,9 +67,10 @@ export default function EditBill({ isOpen, onClose, bill, fetchBills }) {
 
     try {
       const response = await axios.put(
-        `http://localhost:3001/updateBills/${bill._id}`,
-        formData
-      );
+  `https://house-management-webapp-backend.onrender.com/updateBills/${bill._id}`,
+  formData
+);
+
       
       if (response.status === 200) {
         fetchBills(); // Refresh the bills list

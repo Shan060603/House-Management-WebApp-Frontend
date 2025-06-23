@@ -52,7 +52,8 @@ export default function TaskPage() {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/gettasks"); // ✅ Updated port
+      const response = await axios.get("https://house-management-webapp-backend.onrender.com/gettasks");
+ // ✅ Updated port
       setTasks(response.data);
     } catch (error) {
       console.error("Error fetching tasks:", error);

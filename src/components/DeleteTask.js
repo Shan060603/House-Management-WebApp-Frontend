@@ -18,9 +18,10 @@ export default function DeleteTask({ isOpen, onClose, taskId, fetchTasks }) {
   const handleDelete = async () => {
     if (!taskId) return;
     try {
-      const response = await axios.delete(
-        `http://localhost:3001/deleteTasks/${taskId}`
-      );
+     const response = await axios.delete(
+  `https://house-management-webapp-backend.onrender.com/deleteTasks/${taskId}`
+);
+
       if (response.status === 200) {
         fetchTasks(); // Refresh the task list after deleting
         toast({

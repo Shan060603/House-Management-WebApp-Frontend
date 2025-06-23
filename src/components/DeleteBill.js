@@ -17,8 +17,9 @@ import {
     const handleDelete = async () => {
       try {
         const response = await axios.delete(
-          `http://localhost:3001/deleteBills/${billId}`
-        );
+  `https://house-management-webapp-backend.onrender.com/deleteBills/${billId}`
+);
+
         
         if (response.status === 200) {
           fetchBills(); // Refresh the bills list

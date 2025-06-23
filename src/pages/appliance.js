@@ -56,7 +56,8 @@ export default function AppliancePage() {
   } = useDisclosure();
   const fetchAppliances = useCallback(async () => {
     try {
-      const response = await axios.get("http://localhost:3001/getAppliances");
+      const response = await axios.get("https://house-management-webapp-backend.onrender.com/getAppliances");
+
       setAppliances(response.data); // Assuming response.data contains the array of appliances
     } catch (error) {
       console.error("Error fetching appliances:", error);

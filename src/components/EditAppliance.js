@@ -43,10 +43,11 @@ export default function EditAppliance({ isOpen, onClose, appliance, fetchApplian
   const updateAppliance = async () => {
     if (!appliance) return;
     try {
-      const response = await axios.put(
-        `http://localhost:3001/updateAppliances/${appliance._id}`,
-        formData
-      );
+    const response = await axios.put(
+  `https://house-management-webapp-backend.onrender.com/updateAppliances/${appliance._id}`,
+  formData
+);
+
       if (response.status === 200) {
         fetchAppliances(); // Refresh the appliance list
         toast({

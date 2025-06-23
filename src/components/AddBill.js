@@ -38,7 +38,8 @@ const fetchUsers = useCallback(async () => {
     try {
       console.log("Fetching users...");
       // Try using /users instead of /getUsers
-      const response = await axios.get("http://localhost:3001/getUsers");
+      const response = await axios.get("https://house-management-webapp-backend.onrender.com/getUsers");
+
       console.log("Users response:", response.data);
       
       if (response.data && Array.isArray(response.data)) {
@@ -114,10 +115,8 @@ const fetchUsers = useCallback(async () => {
     try {
       console.log("Submitting bill data:", formData);
       
-      const response = await axios.post(
-        "http://localhost:3001/addBills",
-        formData
-      );
+     const response = await axios.post("https://house-management-webapp-backend.onrender.com/addBills", formData);
+
       
       if (response.status === 201) {
         fetchBills(); // Refresh the bills list
