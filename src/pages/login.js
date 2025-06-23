@@ -147,7 +147,7 @@ export default function LoginPage() {
               colorScheme="blue"
               onClick={() => router.push("/register")}
             >
-              Don't have an account? Sign Up
+              Don&apos;t have an account? Sign Up
             </Button>
           </VStack>
 
