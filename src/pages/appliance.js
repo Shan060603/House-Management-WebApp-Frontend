@@ -29,6 +29,7 @@ import axios from "../api"; // Use the shared axios instance
 import AddAppliance from "@/components/AddAppliance";
 import EditAppliance from "@/components/EditAppliance";
 import DeleteAppliance from "@/components/DeleteAppliance";
+import { useCallback } from "react";
 
 export default function AppliancePage() {
   const [appliances, setAppliances] = useState([]);
@@ -77,7 +78,13 @@ export default function AppliancePage() {
         position: "bottom-left", // You can adjust the position as needed
       });
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchAppliances();
+  }, [fetchAppliances]);
+
+  // Removed duplicate fetchAppliances function
 
   const handleEdit = (appliance) => {
     console.log("Selected Appliance:", appliance); // Log to check the appliance data
