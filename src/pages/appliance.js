@@ -55,11 +55,7 @@ export default function AppliancePage() {
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  useEffect(() => {
-    fetchAppliances();
-  }, []);
-
-  const fetchAppliances = async () => {
+  const fetchAppliances = useCallback(async () => {
     const token = localStorage.getItem("token");
     console.log("Token in localStorage:", token);
     console.log("Fetching appliances...");
@@ -83,8 +79,6 @@ export default function AppliancePage() {
   useEffect(() => {
     fetchAppliances();
   }, [fetchAppliances]);
-
-  // Removed duplicate fetchAppliances function
 
   const handleEdit = (appliance) => {
     console.log("Selected Appliance:", appliance); // Log to check the appliance data
