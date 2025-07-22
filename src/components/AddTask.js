@@ -17,15 +17,33 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 
 export default function AddTask({ fetchTasks }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState([""]); // Changed to array
   const [dueDate, setDueDate] = useState("");
   const [status, setStatus] = useState("Pending");
   const toast = useToast();
+
+  // Helper to handle description change
+  const handleDescriptionChange = (idx, value) => {
+    const newDesc = [...description];
+    newDesc[idx] = value;
+    setDescription(newDesc);
+  };
+
+  // Add new description field
+  const addDescriptionField = () => {
+    setDescription([...description, ""]);
+  };
+
+  // Remove a description field
+  const removeDescriptionField = (idx) => {
+    if (description.length === 1) return; // Always keep at least one
+    setDescription(description.filter((_, i) => i !== idx));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission behavior
@@ -33,7 +51,7 @@ export default function AddTask({ fetchTasks }) {
     try {
       const response = await axios.post("http://localhost:3001/addTasks", {
         title,
-        description,
+        description: description.filter((desc) => desc.trim() !== ""), // Remove empty
         dueDate,
         status,
       });
@@ -51,7 +69,7 @@ export default function AddTask({ fetchTasks }) {
 
         // ✅ Clear form fields after successful submission
         setTitle("");
-        setDescription("");
+        setDescription([""]); // Reset to one empty field
         setDueDate("");
         setStatus("Pending");
       }
@@ -96,15 +114,38 @@ export default function AddTask({ fetchTasks }) {
                 />
               </FormControl>
 
-              {/* Description */}
+              {/* Description (Multiple Fields) */}
               <FormControl mb={4}>
                 <FormLabel>Description</FormLabel>
-                <Input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter task description"
-                />
+                {description.map((desc, idx) => (
+                  <Flex key={idx} mb={2} align="center">
+                    <Input
+                      type="text"
+                      value={desc}
+                      onChange={(e) =>
+                        handleDescriptionChange(idx, e.target.value)
+                      }
+                      placeholder={`Description item ${idx + 1}`}
+                    />
+                    <Button
+                      ml={2}
+                      colorScheme="red"
+                      size="sm"
+                      onClick={() => removeDescriptionField(idx)}
+                      isDisabled={description.length === 1}
+                    >
+                      Remove
+                    </Button>
+                  </Flex>
+                ))}
+                <Button
+                  mt={2}
+                  onClick={addDescriptionField}
+                  colorScheme="blue"
+                  size="sm"
+                >
+                  Add More
+                </Button>
               </FormControl>
 
               {/* Due Date */}

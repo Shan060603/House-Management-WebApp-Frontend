@@ -17,7 +17,7 @@ import {
   Flex,
   Box,
 } from "@chakra-ui/react";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
@@ -40,12 +40,20 @@ export default function AddAppliance({ isOpen, onClose, fetchAppliances }) {
     }
 
     try {
-      const response = await axios.post("http://localhost:3001/addAppliances", {
+      const applianceData = {
         name,
-        brand,
+        brand: brand || "",
         dateBought,
-        nextMaintenanceDate,
-      });
+      };
+
+      if (nextMaintenanceDate) {
+        applianceData.nextMaintenanceDate = nextMaintenanceDate;
+      }
+
+      const response = await axios.post(
+        "http://localhost:3001/addAppliances",
+        applianceData
+      );
 
       console.log("Appliance added successfully:", response.data);
       fetchAppliances(); // Refresh appliance list after adding

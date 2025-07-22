@@ -25,7 +25,7 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 import { useRouter } from "next/router";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 import AddAppliance from "@/components/AddAppliance";
 import EditAppliance from "@/components/EditAppliance";
 import DeleteAppliance from "@/components/DeleteAppliance";
@@ -59,8 +59,12 @@ export default function AppliancePage() {
   }, []);
 
   const fetchAppliances = async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token in localStorage:", token);
+    console.log("Fetching appliances...");
     try {
       const response = await axios.get("http://localhost:3001/getAppliances");
+      console.log("Appliances response:", response);
       setAppliances(response.data); // Assuming response.data contains the array of appliances
     } catch (error) {
       console.error("Error fetching appliances:", error);
@@ -76,11 +80,12 @@ export default function AppliancePage() {
   };
 
   const handleEdit = (appliance) => {
+    console.log("Selected Appliance:", appliance); // Log to check the appliance data
     setSelectedAppliance(appliance);
     onEditOpen();
   };
-
   const handleDelete = (appliance) => {
+    console.log("Deleting appliance with ID:", appliance._id); // Log the ID
     setSelectedAppliance(appliance);
     onDeleteOpen();
   };
@@ -102,7 +107,7 @@ export default function AppliancePage() {
         {[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Tasks", href: "/task" },
-          { label: "Appliance", href: "/appliance" },
+          { label: "Assets", href: "/appliance" },
           { label: "Bill", href: "/bill" },
           { label: "Expenses", href: "/expense" },
           { label: "Inventory", href: "/inventory" },
@@ -138,7 +143,7 @@ export default function AppliancePage() {
         {/* Header with "Add Appliance" Button */}
         <Flex justify="space-between" mb="6" align="center">
           <Text fontSize="2xl" fontWeight="bold">
-            Appliance
+            Assets
           </Text>
           <Button
             leftIcon={<FaPlus />}
@@ -148,7 +153,7 @@ export default function AppliancePage() {
             px={4}
             py={2}
           >
-            Add Appliance
+            Add Assets
           </Button>
         </Flex>
 
@@ -159,7 +164,7 @@ export default function AppliancePage() {
               <Text fontSize="lg">{appliances.length}</Text>
               <FaWrench size="24px" />
             </Flex>
-            <Text>Total Appliances</Text>
+            <Text>Total Assets</Text>
           </GridItem>
           <GridItem bg="orange.400" p="4" borderRadius="md" color="white">
             <Flex align="center" justify="space-between">
@@ -167,6 +172,7 @@ export default function AppliancePage() {
                 {
                   appliances.filter(
                     (appliance) =>
+                      appliance.nextMaintenanceDate && // Check for existence here
                       new Date(appliance.nextMaintenanceDate) < new Date()
                   ).length
                 }
@@ -237,14 +243,15 @@ export default function AppliancePage() {
           onClose={onAddClose}
           fetchAppliances={fetchAppliances}
         />
-        {selectedAppliance && (
+        {selectedAppliance && ( // Conditionally render EditAppliance
           <EditAppliance
             isOpen={isEditOpen}
             onClose={onEditClose}
-            appliance={selectedAppliance}
+            appliance={selectedAppliance} // Pass the entire appliance object
             fetchAppliances={fetchAppliances}
           />
         )}
+
         {selectedAppliance && (
           <DeleteAppliance
             isOpen={isDeleteOpen}

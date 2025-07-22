@@ -10,7 +10,7 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 
 export default function DeleteTask({ isOpen, onClose, taskId, fetchTasks }) {
   const toast = useToast();

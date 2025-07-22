@@ -13,13 +13,14 @@ import {
   ModalFooter,
   Select,
   useToast,
+  Flex,
 } from "@chakra-ui/react";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 
 export default function EditTask({ isOpen, onClose, task, fetchTasks }) {
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
+    description: [""], // Changed to array
     dueDate: "",
     status: "Pending",
   });
@@ -30,12 +31,37 @@ export default function EditTask({ isOpen, onClose, task, fetchTasks }) {
     if (task) {
       setFormData({
         title: task.title || "",
-        description: task.description || "",
+        description: Array.isArray(task.description)
+          ? task.description.length > 0
+            ? task.description
+            : [""]
+          : [task.description || ""],
         dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
         status: task.status || "Pending",
       });
     }
   }, [task]); // Update form when task changes
+
+  // Handle change for description array
+  const handleDescriptionChange = (idx, value) => {
+    const newDesc = [...formData.description];
+    newDesc[idx] = value;
+    setFormData({ ...formData, description: newDesc });
+  };
+
+  // Add new description field
+  const addDescriptionField = () => {
+    setFormData({ ...formData, description: [...formData.description, ""] });
+  };
+
+  // Remove a description field
+  const removeDescriptionField = (idx) => {
+    if (formData.description.length === 1) return; // Always keep at least one
+    setFormData({
+      ...formData,
+      description: formData.description.filter((_, i) => i !== idx),
+    });
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -46,7 +72,12 @@ export default function EditTask({ isOpen, onClose, task, fetchTasks }) {
     try {
       const response = await axios.put(
         `http://localhost:3001/updateTasks/${task._id}`,
-        formData
+        {
+          ...formData,
+          description: formData.description.filter(
+            (desc) => desc.trim() !== ""
+          ), // Remove empty
+        }
       );
       if (response.status === 200) {
         fetchTasks(); // Refresh the task list
@@ -89,15 +120,36 @@ export default function EditTask({ isOpen, onClose, task, fetchTasks }) {
             />
           </FormControl>
 
-          {/* Description */}
+          {/* Description (Multiple Fields) */}
           <FormControl mb={4}>
             <FormLabel>Description</FormLabel>
-            <Input
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Enter task description"
-            />
+            {formData.description.map((desc, idx) => (
+              <Flex key={idx} mb={2} align="center">
+                <Input
+                  name="description"
+                  value={desc}
+                  onChange={(e) => handleDescriptionChange(idx, e.target.value)}
+                  placeholder={`Description item ${idx + 1}`}
+                />
+                <Button
+                  ml={2}
+                  colorScheme="red"
+                  size="sm"
+                  onClick={() => removeDescriptionField(idx)}
+                  isDisabled={formData.description.length === 1}
+                >
+                  Remove
+                </Button>
+              </Flex>
+            ))}
+            <Button
+              mt={2}
+              onClick={addDescriptionField}
+              colorScheme="blue"
+              size="sm"
+            >
+              Add More
+            </Button>
           </FormControl>
 
           {/* Due Date */}

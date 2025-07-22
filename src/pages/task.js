@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
 import { useRouter } from "next/router";
-import axios from "axios";
+import axios from "../api"; // Use the shared axios instance
 import AddTask from "@/components/AddTask";
 import EditTask from "@/components/EditTask";
 import DeleteTask from "@/components/DeleteTask";
@@ -51,8 +51,12 @@ export default function TaskPage() {
   }, []);
 
   const fetchTasks = async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token in localStorage:", token);
+    console.log("Fetching tasks...");
     try {
-      const response = await axios.get("http://localhost:3001/gettasks"); // ✅ Updated port
+      const response = await axios.get("http://localhost:3001/getTasks");
+      console.log("Tasks response:", response);
       setTasks(response.data);
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -88,7 +92,7 @@ export default function TaskPage() {
         {[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Tasks", href: "/task" },
-          { label: "Appliance", href: "/appliance" },
+          { label: "Assets", href: "/appliance" },
           { label: "Bill", href: "/bill" },
           { label: "Expenses", href: "/expense" },
           { label: "Inventory", href: "/inventory" },
@@ -152,7 +156,17 @@ export default function TaskPage() {
                   .map((task) => (
                     <Tr key={task._id}>
                       <Td>{task.title}</Td>
-                      <Td>{task.description || "N/A"}</Td>
+                      <Td>
+                        {Array.isArray(task.description) ? (
+                          <ul>
+                            {task.description.map((desc, idx) => (
+                              <li key={idx}>{desc}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          task.description || "N/A"
+                        )}
+                      </Td>
                       <Td>
                         {task.dueDate
                           ? new Date(task.dueDate).toLocaleDateString()

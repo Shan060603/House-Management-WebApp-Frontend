@@ -30,7 +30,7 @@ export default function Dashboard() {
         {[
           { label: "Dashboard", href: "dashboard" },
           { label: "Tasks", href: "task" },
-          { label: "Appliance", href: "appliance" },
+          { label: "Assets", href: "appliance" },
           { label: "Bill", href: "bill" },
           { label: "Expenses", href: "expense" },
           { label: "Inventory", href: "inventory" },

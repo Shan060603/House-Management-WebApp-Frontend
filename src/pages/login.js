@@ -45,11 +45,23 @@ export default function LoginPage() {
         "http://localhost:3001/login",
         formData
       );
-      setMessage("Login successful");
-      setTimeout(() => router.push("/dashboard"), 1000);
+      if (response.data.token) {
+        // Store the token and user info
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        // Redirect or update UI
+        setMessage("Login successful");
+        setTimeout(() => router.push("/dashboard"), 1000);
+      }
     } catch (error) {
       setError(error.response?.data?.message || "Failed to login");
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    // Redirect to login or update UI
   };
 
   return (
