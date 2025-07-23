@@ -29,6 +29,8 @@ export default function RegisterPage() {
     role: "",
     contact: "",
     address: "",
+    work: "",
+    image: null,
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -38,17 +40,27 @@ export default function RegisterPage() {
 
   // Handle form change
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setFormData((prev) => ({ ...prev, image: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   // Handle form submission
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
+      const data = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) data.append(key, value);
+      });
+      console.log("Register FormData entries:", [...data.entries()]);
       const response = await axios.post(
         "http://localhost:3001/register",
-        formData
+        data,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       setMessage(response.data.message || "Registration successful");
       setTimeout(() => router.push("/"), 1000);
@@ -71,16 +83,7 @@ export default function RegisterPage() {
       </Head>
 
       {/* Background */}
-      <Flex
-        minH="100vh"
-        align="center"
-        justify="center"
-        bg="blue.400" // Background color outside the box
-        //bgImage="url('/background.jpg')" // Background image path
-        //bgSize="cover" // Cover the whole background
-        //bgPosition="center" // Center the image
-        //bgRepeat="no-repeat" // Avoid image repetition
-      >
+      <Flex minH="100vh" align="center" justify="center" bg="blue.400">
         <Box
           maxW="400px"
           mx="auto"
@@ -110,7 +113,12 @@ export default function RegisterPage() {
           )}
 
           {/* Form */}
-          <VStack spacing={4} as="form" onSubmit={handleRegister}>
+          <VStack
+            spacing={4}
+            as="form"
+            onSubmit={handleRegister}
+            encType="multipart/form-data"
+          >
             <FormControl>
               <FormLabel>Full Name</FormLabel>
               <Input
@@ -195,6 +203,28 @@ export default function RegisterPage() {
                 value={formData.address}
                 onChange={handleChange}
                 required
+                bg="white"
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Work</FormLabel>
+              <Input
+                name="work"
+                placeholder="Occupation or Company"
+                value={formData.work}
+                onChange={handleChange}
+                bg="white"
+              />
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Profile Image</FormLabel>
+              <Input
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
                 bg="white"
               />
             </FormControl>
