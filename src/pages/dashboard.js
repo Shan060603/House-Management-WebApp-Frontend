@@ -6,6 +6,15 @@ import {
   GridItem,
   Link,
   Button,
+  IconButton,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useDisclosure,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   FaFacebook,
@@ -14,6 +23,10 @@ import {
   FaComments,
   FaFileInvoiceDollar,
   FaWrench,
+  FaShoppingCart,
+  FaCalendarAlt,
+  FaExclamationTriangle,
+  FaBars,
 } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "../api";
@@ -24,6 +37,9 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [bills, setBills] = useState([]);
   const [appliances, setAppliances] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     fetchStats();
@@ -31,14 +47,17 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const [tasksRes, billsRes, appliancesRes] = await Promise.all([
-        axios.get("http://localhost:3001/getTasks"),
-        axios.get("http://localhost:3001/getBills"),
-        axios.get("http://localhost:3001/getAppliances"),
-      ]);
+      const [tasksRes, billsRes, appliancesRes, inventoryRes] =
+        await Promise.all([
+          axios.get("http://localhost:3001/getTasks"),
+          axios.get("http://localhost:3001/getBills"),
+          axios.get("http://localhost:3001/getAppliances"),
+          axios.get("http://localhost:3001/inventory"),
+        ]);
       setTasks(tasksRes.data);
       setBills(billsRes.data);
       setAppliances(appliancesRes.data);
+      setInventoryItems(inventoryRes.data);
     } catch (error) {
       // Optionally handle error
       console.error("Error fetching dashboard stats:", error);
@@ -66,305 +85,303 @@ export default function Dashboard() {
     (appliance) => !appliance.nextMaintenanceDate
   ).length;
 
-  return (
-    <Flex>
-      {/* Sidebar */}
-      <Flex
-        w="250px"
-        bg="purple.700"
-        color="white"
-        p="4"
-        minH="100vh"
-        direction="column" // Stack vertically
-      >
-        <Text fontSize="24px" fontWeight="bold" mb="4">
-          Family Hub
-        </Text>
-        {[
-          { label: "Dashboard", href: "dashboard" },
-          { label: "Tasks", href: "task" },
-          { label: "Assets", href: "appliance" },
-          { label: "Bill", href: "bill" },
-          { label: "Expenses", href: "expense" },
-          { label: "Inventory", href: "inventory" },
-          { label: "Calendar", href: "calendar" },
-          { label: "Users", href: "user" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            w="full"
-            display={"block"}
-            px={5}
-            py={3}
-            color={"white"}
-            _active={{ bg: "teal.500", color: "white" }}
-            _hover={{ bg: "teal.500", color: "white" }}
-            href={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
+  // Inventory stats
+  const totalInventoryItems = inventoryItems.length;
+  const isExpiringSoon = (expirationDate) => {
+    if (!expirationDate) return false;
+    const expDate = new Date(expirationDate);
+    const today = new Date();
+    const diffTime = expDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 7 && diffDays >= 0;
+  };
+  const isExpired = (expirationDate) => {
+    if (!expirationDate) return false;
+    const expDate = new Date(expirationDate);
+    const today = new Date();
+    return expDate < today;
+  };
+  const expiringSoon = inventoryItems.filter((item) =>
+    isExpiringSoon(item.expirationDate)
+  ).length;
+  const expired = inventoryItems.filter((item) =>
+    isExpired(item.expirationDate)
+  ).length;
 
-        {/* Logout Button at the Bottom */}
-        <Button
-          onClick={() => router.push("/login")}
-          bg="red.500"
-          color="white"
-          mt="auto" // Push to the bottom
+  const navigationItems = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Tasks", href: "/task" },
+    { label: "Assets", href: "/appliance" },
+    { label: "Bill", href: "/bill" },
+    { label: "Inventory", href: "/inventory" },
+    { label: "Calendar", href: "/calendar" },
+    { label: "Users", href: "/user" },
+  ];
+
+  const SidebarContent = () => (
+    <>
+      <Text fontSize="24px" fontWeight="bold" mb="4">
+        Family Hub
+      </Text>
+      {navigationItems.map((item) => (
+        <Link
+          key={item.href}
           w="full"
-          _hover={{ bg: "red.600" }}
+          display="block"
+          px={5}
+          py={3}
+          color="white"
+          _active={{ bg: "teal.500", color: "white" }}
+          _hover={{ bg: "teal.500", color: "white" }}
+          href={item.href}
+          onClick={isMobile ? onClose : undefined}
         >
-          Logout
-        </Button>
-      </Flex>
+          {item.label}
+        </Link>
+      ))}
+      <Button
+        onClick={() => router.push("/login")}
+        bg="red.500"
+        color="white"
+        mt="auto"
+        w="full"
+        _hover={{ bg: "red.600" }}
+      >
+        Logout
+      </Button>
+    </>
+  );
+
+  return (
+    <Flex h="100vh" overflow="hidden">
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <IconButton
+          icon={<FaBars />}
+          onClick={onOpen}
+          position="fixed"
+          top="20px"
+          left="20px"
+          zIndex="1002"
+          bg="purple.700"
+          color="white"
+          _hover={{ bg: "purple.600" }}
+          size="lg"
+          borderRadius="md"
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer isOpen={isOpen} onClose={onClose} placement="left" size="xs">
+        <DrawerOverlay />
+        <DrawerContent bg="purple.700" color="white">
+          <DrawerCloseButton color="white" />
+          <DrawerHeader>
+            <Text fontSize="24px" fontWeight="bold">
+              Family Hub
+            </Text>
+          </DrawerHeader>
+          <DrawerBody p={0}>
+            <Flex direction="column" h="full" p={4}>
+              <SidebarContent />
+            </Flex>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Flex
+          w="250px"
+          bg="purple.700"
+          color="white"
+          p="4"
+          h="100vh"
+          direction="column"
+        >
+          <SidebarContent />
+        </Flex>
+      )}
 
       {/* Main Content */}
-      <Box flex="1" p="4" bg="gray.50">
+      <Box
+        flex="1"
+        p={{ base: 2, md: 4 }}
+        bg="gray.50"
+        h="100vh"
+        overflow="hidden"
+        display="flex"
+        flexDirection="column"
+      >
         {/* Header */}
-        <Flex justify="space-between" align="center" mb="6">
-          <Text fontSize="2xl" fontWeight="bold">
+        <Flex
+          justify="space-between"
+          align="center"
+          mb={4}
+          mt={{ base: 16, md: 0 }}
+          flexShrink={0}
+        >
+          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
             Welcome, Silveo Family!
           </Text>
         </Flex>
 
         {/* Status Cards */}
-        <Flex justify="center" w="100%">
+        <Flex flex="1" justify="center" align="center" overflow="hidden">
           <Grid
-            templateColumns="repeat(3, 1fr)"
-            gap={8}
-            mb={10}
+            templateColumns={{
+              base: "1fr",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(2, 1fr)",
+            }}
+            gap={{ base: 4, md: 6 }}
             maxW="1100px"
-            mx="auto"
             w="100%"
+            overflow="hidden"
+            h="100%"
           >
-            <GridItem
-              bg="blue.500"
-              p={10}
-              borderRadius="2xl"
-              color="white"
-              boxShadow="2xl"
-            >
-              <Flex align="center" justify="space-between" mb={4}>
-                <Text fontSize="4xl" fontWeight="bold">
-                  {totalTasks}
-                </Text>
-                <FaComments size="48px" />
-              </Flex>
-              <Text fontSize="2xl" fontWeight="semibold">
-                Total Tasks
-              </Text>
-              <Text fontSize="lg" mt={2}>
-                Pending: <b>{pendingTasks}</b>
-              </Text>
-              <Text fontSize="lg">
-                Completed: <b>{completedTasks}</b>
-              </Text>
-              {/* Task List inside the card, polished and aligned */}
-              <Box
-                mt={4}
-                bg="white"
-                borderRadius="lg"
-                p={2}
-                color="gray.800"
-                minH="60px"
-                maxH="120px"
-                overflowY="auto"
-                w="100%"
+            {/* Each card section */}
+            {[
+              {
+                color: "blue.500",
+                icon: FaComments,
+                title: "Total Tasks",
+                total: totalTasks,
+                stats: [
+                  { label: "Pending", value: pendingTasks },
+                  { label: "Completed", value: completedTasks },
+                ],
+                list: tasks,
+                nameKey: "title",
+                dateKey: "dueDate",
+                statusKey: "status",
+              },
+              {
+                color: "purple.500",
+                icon: FaFileInvoiceDollar,
+                title: "Total Bills",
+                total: totalBills,
+                stats: [
+                  { label: "Pending", value: pendingBills },
+                  { label: "Paid", value: paidBills },
+                ],
+                list: bills,
+                nameKey: "billType",
+                dateKey: "dueDate",
+                statusKey: "status",
+              },
+              {
+                color: "teal.400",
+                icon: FaWrench,
+                title: "Total Assets",
+                total: totalAssets,
+                stats: [
+                  { label: "Maintenance Due", value: maintenanceDue },
+                  {
+                    label: "Missing Maintenance Date",
+                    value: missingMaintenance,
+                  },
+                ],
+                list: appliances,
+                nameKey: "name",
+                dateKey: "brand",
+              },
+              {
+                color: "green.500",
+                icon: FaShoppingCart,
+                title: "Total Inventory",
+                total: totalInventoryItems,
+                stats: [
+                  { label: "Expiring Soon", value: expiringSoon },
+                  { label: "Expired", value: expired },
+                ],
+                list: inventoryItems.slice(0, 3),
+                nameKey: "name",
+                dateKey: "quantity",
+              },
+            ].map((card, index) => (
+              <GridItem
+                key={index}
+                bg={card.color}
+                p={{ base: 4, md: 6 }}
+                borderRadius="2xl"
+                color="white"
+                boxShadow="xl"
+                overflow="hidden"
+                display="flex"
+                flexDirection="column"
               >
-                {tasks.length === 0 ? (
-                  <Text color="gray.400" fontSize="sm">
-                    No tasks found.
+                <Flex align="center" justify="space-between" mb={2}>
+                  <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold">
+                    {card.total}
                   </Text>
-                ) : (
-                  tasks.map((task, idx) => (
-                    <Box
-                      key={task._id}
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      bg="gray.50"
-                      boxShadow="xs"
-                      mb={idx !== tasks.length - 1 ? 2 : 0}
-                      textAlign="left"
-                    >
-                      <Text fontWeight="bold" fontSize="sm">
-                        {task.title}
-                      </Text>
-                      <Text color="gray.500" fontSize="sm">
-                        Due:{" "}
-                        {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString()
-                          : "-"}
-                      </Text>
-                      <Text
-                        color={
-                          task.status === "Completed"
-                            ? "green.600"
-                            : "yellow.600"
+                  <card.icon size="40px" />
+                </Flex>
+                <Text fontSize={{ base: "lg", md: "xl" }} fontWeight="semibold">
+                  {card.title}
+                </Text>
+
+                {/* Stats */}
+                {card.stats.map((stat, i) => (
+                  <Text fontSize="sm" mt={1} key={i}>
+                    {stat.label}: <b>{stat.value}</b>
+                  </Text>
+                ))}
+
+                {/* Scrollable list inside the card */}
+                <Box
+                  mt={3}
+                  bg="white"
+                  borderRadius="lg"
+                  p={2}
+                  color="gray.800"
+                  flex="1"
+                  overflowY="auto"
+                >
+                  {card.list.length === 0 ? (
+                    <Text color="gray.400" fontSize="sm">
+                      No data found.
+                    </Text>
+                  ) : (
+                    card.list.map((item, idx) => (
+                      <Box
+                        key={item._id || idx}
+                        py={1}
+                        borderBottom={
+                          idx !== card.list.length - 1
+                            ? "1px solid #E2E8F0"
+                            : "none"
                         }
-                        fontSize="sm"
                       >
-                        Status: {task.status}
-                      </Text>
-                      {idx !== tasks.length - 1 && (
-                        <Box
-                          borderBottom="1px solid"
-                          borderColor="gray.200"
-                          mt={2}
-                        />
-                      )}
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </GridItem>
-            <GridItem
-              bg="purple.500"
-              p={10}
-              borderRadius="2xl"
-              color="white"
-              boxShadow="2xl"
-            >
-              <Flex align="center" justify="space-between" mb={4}>
-                <Text fontSize="4xl" fontWeight="bold">
-                  {totalBills}
-                </Text>
-                <FaFileInvoiceDollar size="48px" />
-              </Flex>
-              <Text fontSize="2xl" fontWeight="semibold">
-                Total Bills
-              </Text>
-              <Text fontSize="lg" mt={2}>
-                Pending: <b>{pendingBills}</b>
-              </Text>
-              <Text fontSize="lg">
-                Paid: <b>{paidBills}</b>
-              </Text>
-              {/* Bill List inside the card, polished and aligned */}
-              <Box
-                mt={4}
-                bg="white"
-                borderRadius="lg"
-                p={2}
-                color="gray.800"
-                minH="60px"
-                maxH="120px"
-                overflowY="auto"
-                w="100%"
-              >
-                {bills.length === 0 ? (
-                  <Text color="gray.400" fontSize="sm">
-                    No bills found.
-                  </Text>
-                ) : (
-                  bills.map((bill, idx) => (
-                    <Box
-                      key={bill._id}
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      bg="gray.50"
-                      boxShadow="xs"
-                      mb={idx !== bills.length - 1 ? 2 : 0}
-                      textAlign="left"
-                    >
-                      <Text fontWeight="bold" fontSize="sm">
-                        {bill.billType}
-                      </Text>
-                      <Text color="gray.500" fontSize="sm">
-                        Due:{" "}
-                        {bill.dueDate
-                          ? new Date(bill.dueDate).toLocaleDateString()
-                          : "-"}
-                      </Text>
-                      <Text
-                        color={
-                          bill.status === "Paid" ? "green.600" : "yellow.600"
-                        }
-                        fontSize="sm"
-                      >
-                        Status: {bill.status}
-                      </Text>
-                      {idx !== bills.length - 1 && (
-                        <Box
-                          borderBottom="1px solid"
-                          borderColor="gray.200"
-                          mt={2}
-                        />
-                      )}
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </GridItem>
-            <GridItem
-              bg="teal.400"
-              p={10}
-              borderRadius="2xl"
-              color="white"
-              boxShadow="2xl"
-            >
-              <Flex align="center" justify="space-between" mb={4}>
-                <Text fontSize="4xl" fontWeight="bold">
-                  {totalAssets}
-                </Text>
-                <FaWrench size="48px" />
-              </Flex>
-              <Text fontSize="2xl" fontWeight="semibold">
-                Total Assets
-              </Text>
-              <Text fontSize="lg" mt={2}>
-                Maintenance Due: <b>{maintenanceDue}</b>
-              </Text>
-              <Text fontSize="lg">
-                Missing Maintenance Date: <b>{missingMaintenance}</b>
-              </Text>
-              {/* Asset List inside the card, perfectly aligned with other cards */}
-              <Box
-                mt={4}
-                bg="white"
-                borderRadius="lg"
-                p={2}
-                color="gray.800"
-                minH="60px"
-                maxH="120px"
-                overflowY="auto"
-                w="100%"
-              >
-                {appliances.length === 0 ? (
-                  <Text color="gray.400" fontSize="sm">
-                    No assets found.
-                  </Text>
-                ) : (
-                  appliances.map((appliance, idx) => (
-                    <Box
-                      key={appliance._id}
-                      px={2}
-                      py={1}
-                      borderRadius="md"
-                      bg="gray.50"
-                      boxShadow="xs"
-                      mb={idx !== appliances.length - 1 ? 2 : 0}
-                      textAlign="left"
-                    >
-                      <Text fontWeight="bold" fontSize="sm">
-                        {appliance.name}
-                      </Text>
-                      <Text color="gray.500" fontSize="sm">
-                        Brand: {appliance.brand || "-"}
-                      </Text>
-                      {idx !== appliances.length - 1 && (
-                        <Box
-                          borderBottom="1px solid"
-                          borderColor="gray.200"
-                          mt={2}
-                        />
-                      )}
-                    </Box>
-                  ))
-                )}
-              </Box>
-            </GridItem>
+                        <Text fontWeight="bold" fontSize="sm">
+                          {item[card.nameKey]}
+                        </Text>
+                        {item[card.dateKey] && (
+                          <Text fontSize="xs" color="gray.500">
+                            {typeof item[card.dateKey] === "string"
+                              ? `Info: ${item[card.dateKey]}`
+                              : ""}
+                          </Text>
+                        )}
+                        {item.status && (
+                          <Text
+                            fontSize="xs"
+                            color={
+                              item.status === "Completed" ||
+                              item.status === "Paid"
+                                ? "green.600"
+                                : "orange.600"
+                            }
+                          >
+                            Status: {item.status}
+                          </Text>
+                        )}
+                      </Box>
+                    ))
+                  )}
+                </Box>
+              </GridItem>
+            ))}
           </Grid>
         </Flex>
       </Box>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Flex,
@@ -16,6 +16,13 @@ import {
   Link,
   useDisclosure,
   useToast,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import {
   FaPlus,
@@ -23,19 +30,20 @@ import {
   FaEdit,
   FaWrench,
   FaCalendarAlt,
+  FaBars,
 } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "../api"; // Use the shared axios instance
 import AddAppliance from "@/components/AddAppliance";
 import EditAppliance from "@/components/EditAppliance";
 import DeleteAppliance from "@/components/DeleteAppliance";
-import { useCallback } from "react";
 
 export default function AppliancePage() {
   const [appliances, setAppliances] = useState([]);
   const [selectedAppliance, setSelectedAppliance] = useState(null);
   const router = useRouter();
   const toast = useToast(); // Initialize the toast hook at the top level of the component
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   const {
     isOpen: isAddOpen,
@@ -53,6 +61,12 @@ export default function AppliancePage() {
     isOpen: isDeleteOpen,
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isSidebarOpen,
+    onOpen: onSidebarOpen,
+    onClose: onSidebarClose,
   } = useDisclosure();
 
   const fetchAppliances = useCallback(async () => {
@@ -91,59 +105,114 @@ export default function AppliancePage() {
     onDeleteOpen();
   };
 
+  const navigationItems = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Tasks", href: "/task" },
+    { label: "Assets", href: "/appliance" },
+    { label: "Bill", href: "/bill" },
+    { label: "Inventory", href: "/inventory" },
+    { label: "Calendar", href: "/calendar" },
+    { label: "Users", href: "/user" },
+  ];
+
+  const SidebarContent = () => (
+    <>
+      <Text fontSize="24px" fontWeight="bold" mb="4">
+        Family Hub
+      </Text>
+      {navigationItems.map((item) => (
+        <Link
+          key={item.href}
+          w="full"
+          px={5}
+          py={3}
+          color="white"
+          _hover={{ bg: "teal.500" }}
+          href={item.href}
+          onClick={isMobile ? onSidebarClose : undefined}
+        >
+          {item.label}
+        </Link>
+      ))}
+      <Button
+        onClick={() => router.push("/login")}
+        bg="red.500"
+        color="white"
+        mt="auto"
+        w="full"
+        _hover={{ bg: "red.600" }}
+      >
+        Logout
+      </Button>
+    </>
+  );
+
   return (
     <Flex>
-      {/* Sidebar */}
-      <Flex
-        w="250px"
-        bg="purple.700"
-        color="white"
-        p="4"
-        minH="100vh"
-        direction="column"
-      >
-        <Text fontSize="24px" fontWeight="bold" mb="4">
-          Family Hub
-        </Text>
-        {[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Tasks", href: "/task" },
-          { label: "Assets", href: "/appliance" },
-          { label: "Bill", href: "/bill" },
-          { label: "Expenses", href: "/expense" },
-          { label: "Inventory", href: "/inventory" },
-          { label: "Calendar", href: "/calendar" },
-          { label: "Users", href: "/user" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            w="full"
-            px={5}
-            py={3}
-            color="white"
-            _hover={{ bg: "teal.500" }}
-            href={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
-        <Button
-          onClick={() => router.push("/login")}
-          bg="red.500"
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <IconButton
+          icon={<FaBars />}
+          onClick={onSidebarOpen}
+          position="fixed"
+          top="20px"
+          left="20px"
+          zIndex="1002"
+          bg="purple.700"
           color="white"
-          mt="auto"
-          w="full"
-          _hover={{ bg: "red.600" }}
+          _hover={{ bg: "purple.600" }}
+          size="lg"
+          borderRadius="md"
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer
+        isOpen={isSidebarOpen}
+        onClose={onSidebarClose}
+        placement="left"
+        size="xs"
+      >
+        <DrawerOverlay />
+        <DrawerContent bg="purple.700" color="white">
+          <DrawerCloseButton color="white" />
+          <DrawerHeader>
+            <Text fontSize="24px" fontWeight="bold">
+              Family Hub
+            </Text>
+          </DrawerHeader>
+          <DrawerBody p={0}>
+            <Flex direction="column" h="full" p={4}>
+              <SidebarContent />
+            </Flex>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Flex
+          w="250px"
+          bg="purple.700"
+          color="white"
+          p="4"
+          minH="100vh"
+          direction="column"
         >
-          Logout
-        </Button>
-      </Flex>
+          <SidebarContent />
+        </Flex>
+      )}
 
       {/* Main Content */}
-      <Box flex="1" p="6" bg="gray.50">
+      <Box flex="1" p={{ base: 2, md: 6 }} bg="gray.50" minH="100vh">
         {/* Header with "Add Appliance" Button */}
-        <Flex justify="space-between" mb="6" align="center">
-          <Text fontSize="2xl" fontWeight="bold">
+        <Flex
+          justify="space-between"
+          mb={6}
+          align="center"
+          mt={{ base: 16, md: 0 }}
+        >
+          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
             Assets
           </Text>
           <Button
@@ -153,12 +222,14 @@ export default function AppliancePage() {
             borderRadius="md"
             px={4}
             py={2}
+            size={{ base: "sm", md: "md" }}
           >
             Add Assets
           </Button>
         </Flex>
 
         {/* Dashboard Section */}
+        {/* Dashboard Section - Styled like Inventory.js */}
         <Grid templateColumns="repeat(3, 1fr)" gap={4} mb={6}>
           <GridItem bg="teal.400" p="4" borderRadius="md" color="white">
             <Flex align="center" justify="space-between">
@@ -167,14 +238,15 @@ export default function AppliancePage() {
             </Flex>
             <Text>Total Assets</Text>
           </GridItem>
+
           <GridItem bg="orange.400" p="4" borderRadius="md" color="white">
             <Flex align="center" justify="space-between">
               <Text fontSize="lg">
                 {
                   appliances.filter(
-                    (appliance) =>
-                      appliance.nextMaintenanceDate && // Check for existence here
-                      new Date(appliance.nextMaintenanceDate) < new Date()
+                    (a) =>
+                      a.nextMaintenanceDate &&
+                      new Date(a.nextMaintenanceDate) < new Date()
                   ).length
                 }
               </Text>
@@ -182,14 +254,11 @@ export default function AppliancePage() {
             </Flex>
             <Text>Maintenance Due</Text>
           </GridItem>
+
           <GridItem bg="red.400" p="4" borderRadius="md" color="white">
             <Flex align="center" justify="space-between">
               <Text fontSize="lg">
-                {
-                  appliances.filter(
-                    (appliance) => !appliance.nextMaintenanceDate
-                  ).length
-                }
+                {appliances.filter((a) => !a.nextMaintenanceDate).length}
               </Text>
               <FaTrash size="24px" />
             </Flex>
@@ -198,45 +267,68 @@ export default function AppliancePage() {
         </Grid>
 
         {/* Appliance Table */}
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>Name</Th>
-              <Th>Brand</Th>
-              <Th>Date Bought</Th>
-              <Th>Next Maintenance</Th>
-              <Th>Actions</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {appliances.map((appliance) => (
-              <Tr key={appliance._id}>
-                <Td>{appliance.name}</Td>
-                <Td>{appliance.brand}</Td>
-                <Td>{new Date(appliance.dateBought).toLocaleDateString()}</Td>
-                <Td>
-                  {appliance.nextMaintenanceDate
-                    ? new Date(
-                        appliance.nextMaintenanceDate
-                      ).toLocaleDateString()
-                    : "N/A"}
-                </Td>
-                <Td>
-                  <IconButton
-                    icon={<FaEdit />}
-                    onClick={() => handleEdit(appliance)}
-                    mr={2}
-                  />
-                  <IconButton
-                    icon={<FaTrash />}
-                    colorScheme="red"
-                    onClick={() => handleDelete(appliance)}
-                  />
-                </Td>
+        <Box overflowX="auto">
+          <Table variant="simple" minW="600px">
+            <Thead>
+              <Tr>
+                <Th fontSize={{ base: "xs", md: "sm" }}>Name</Th>
+                <Th
+                  fontSize={{ base: "xs", md: "sm" }}
+                  display={{ base: "none", md: "table-cell" }}
+                >
+                  Brand
+                </Th>
+                <Th fontSize={{ base: "xs", md: "sm" }}>Date Bought</Th>
+                <Th fontSize={{ base: "xs", md: "sm" }}>Next Maintenance</Th>
+                <Th fontSize={{ base: "xs", md: "sm" }}>Actions</Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
+            </Thead>
+            <Tbody>
+              {appliances.map((appliance) => (
+                <Tr key={appliance._id}>
+                  <Td
+                    fontSize={{ base: "xs", md: "sm" }}
+                    maxW="150px"
+                    isTruncated
+                  >
+                    {appliance.name}
+                  </Td>
+                  <Td
+                    fontSize={{ base: "xs", md: "sm" }}
+                    display={{ base: "none", md: "table-cell" }}
+                  >
+                    {appliance.brand}
+                  </Td>
+                  <Td fontSize={{ base: "xs", md: "sm" }}>
+                    {new Date(appliance.dateBought).toLocaleDateString()}
+                  </Td>
+                  <Td fontSize={{ base: "xs", md: "sm" }}>
+                    {appliance.nextMaintenanceDate
+                      ? new Date(
+                          appliance.nextMaintenanceDate
+                        ).toLocaleDateString()
+                      : "N/A"}
+                  </Td>
+                  <Td>
+                    <Flex gap={1}>
+                      <IconButton
+                        icon={<FaEdit />}
+                        onClick={() => handleEdit(appliance)}
+                        size={{ base: "xs", md: "sm" }}
+                      />
+                      <IconButton
+                        icon={<FaTrash />}
+                        colorScheme="red"
+                        onClick={() => handleDelete(appliance)}
+                        size={{ base: "xs", md: "sm" }}
+                      />
+                    </Flex>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
 
         {/* Modals */}
         <AddAppliance

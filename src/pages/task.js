@@ -14,8 +14,15 @@ import {
   Badge,
   IconButton,
   useDisclosure,
+  Drawer,
+  DrawerBody,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  useBreakpointValue,
 } from "@chakra-ui/react";
-import { FaPlus, FaTrash, FaEdit } from "react-icons/fa";
+import { FaPlus, FaTrash, FaEdit, FaBars } from "react-icons/fa";
 import { useRouter } from "next/router";
 import axios from "../api"; // Use the shared axios instance
 import AddTask from "@/components/AddTask";
@@ -26,6 +33,7 @@ export default function TaskPage() {
   const router = useRouter();
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Modal state controls
   const {
@@ -44,6 +52,12 @@ export default function TaskPage() {
     isOpen: isDeleteOpen,
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isSidebarOpen,
+    onOpen: onSidebarOpen,
+    onClose: onSidebarClose,
   } = useDisclosure();
 
   useEffect(() => {
@@ -75,132 +89,216 @@ export default function TaskPage() {
     onDeleteOpen();
   };
 
+  const navigationItems = [
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Tasks", href: "/task" },
+    { label: "Assets", href: "/appliance" },
+    { label: "Bill", href: "/bill" },
+    { label: "Inventory", href: "/inventory" },
+    { label: "Calendar", href: "/calendar" },
+    { label: "Users", href: "/user" },
+  ];
+
+  const SidebarContent = () => (
+    <>
+      <Text fontSize="24px" fontWeight="bold" mb="4">
+        Family Hub
+      </Text>
+      {navigationItems.map((item) => (
+        <Link
+          key={item.href}
+          w="full"
+          px={5}
+          py={3}
+          color="white"
+          _hover={{ bg: "teal.500" }}
+          href={item.href}
+          onClick={isMobile ? onSidebarClose : undefined}
+        >
+          {item.label}
+        </Link>
+      ))}
+      <Button
+        onClick={() => router.push("/login")}
+        bg="red.500"
+        color="white"
+        mt="auto"
+        w="full"
+        _hover={{ bg: "red.600" }}
+      >
+        Logout
+      </Button>
+    </>
+  );
+
   return (
     <Flex>
-      {/* Sidebar */}
-      <Flex
-        w="250px"
-        bg="purple.700"
-        color="white"
-        p="4"
-        minH="100vh"
-        direction="column"
-      >
-        <Text fontSize="24px" fontWeight="bold" mb="4">
-          Family Hub
-        </Text>
-        {[
-          { label: "Dashboard", href: "/dashboard" },
-          { label: "Tasks", href: "/task" },
-          { label: "Assets", href: "/appliance" },
-          { label: "Bill", href: "/bill" },
-          { label: "Expenses", href: "/expense" },
-          { label: "Inventory", href: "/inventory" },
-          { label: "Calendar", href: "/calendar" },
-          { label: "Users", href: "/user" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            w="full"
-            px={5}
-            py={3}
-            color="white"
-            _hover={{ bg: "teal.500" }}
-            href={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
-
-        {/* Logout */}
-        <Button
-          onClick={() => router.push("/login")}
-          bg="red.500"
+      {/* Mobile Menu Button */}
+      {isMobile && (
+        <IconButton
+          icon={<FaBars />}
+          onClick={onSidebarOpen}
+          position="fixed"
+          top="20px"
+          left="20px"
+          zIndex="1002"
+          bg="purple.700"
           color="white"
-          mt="auto"
-          w="full"
-          _hover={{ bg: "red.600" }}
+          _hover={{ bg: "purple.600" }}
+          size="lg"
+          borderRadius="md"
+        />
+      )}
+
+      {/* Mobile Drawer */}
+      <Drawer
+        isOpen={isSidebarOpen}
+        onClose={onSidebarClose}
+        placement="left"
+        size="xs"
+      >
+        <DrawerOverlay />
+        <DrawerContent bg="purple.700" color="white">
+          <DrawerCloseButton color="white" />
+          <DrawerHeader>
+            <Text fontSize="24px" fontWeight="bold">
+              Family Hub
+            </Text>
+          </DrawerHeader>
+          <DrawerBody p={0}>
+            <Flex direction="column" h="full" p={4}>
+              <SidebarContent />
+            </Flex>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Flex
+          w="250px"
+          bg="purple.700"
+          color="white"
+          p="4"
+          minH="100vh"
+          direction="column"
         >
-          Logout
-        </Button>
-      </Flex>
+          <SidebarContent />
+        </Flex>
+      )}
 
       {/* Main Content */}
-      <Box flex="1" p="6" bg="gray.50">
+      <Box flex="1" p={{ base: 2, md: 6 }} bg="gray.50" minH="100vh">
         {/* Header */}
-        <Flex justify="space-between" mb="6" align="center">
-          <Text fontSize="2xl" fontWeight="bold">
+        <Flex
+          justify="space-between"
+          mb={6}
+          align="center"
+          mt={{ base: 16, md: 0 }}
+        >
+          <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
             Tasks
           </Text>
+          <Button
+            leftIcon={<FaPlus />}
+            colorScheme="blue"
+            onClick={onAddOpen}
+            size={{ base: "sm", md: "md" }}
+          >
+            Add Task
+          </Button>
         </Flex>
 
         {/* Tasks List */}
         {["Pending", "Completed"].map((status) => (
           <Box key={status} mb="6">
-            <Text fontSize="lg" fontWeight="bold" mb="3">
+            <Text fontSize="lg" fontWeight="bold" mb={3}>
               {status}
             </Text>
-            <Table variant="simple" bg="white" boxShadow="md" borderRadius="md">
-              <Thead>
-                <Tr>
-                  <Th>Title</Th>
-                  <Th>Description</Th>
-                  <Th>Due Date</Th>
-                  <Th>Status</Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {tasks
-                  .filter((task) => task.status === status)
-                  .map((task) => (
-                    <Tr key={task._id}>
-                      <Td>{task.title}</Td>
-                      <Td>
-                        {Array.isArray(task.description) ? (
-                          <ul>
-                            {task.description.map((desc, idx) => (
-                              <li key={idx}>{desc}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          task.description || "N/A"
-                        )}
-                      </Td>
-                      <Td>
-                        {task.dueDate
-                          ? new Date(task.dueDate).toLocaleDateString()
-                          : "No Due Date"}
-                      </Td>
-                      <Td>
-                        <Badge
-                          colorScheme={
-                            task.status === "Completed" ? "green" : "yellow"
-                          }
+            <Box overflowX="auto">
+              <Table
+                variant="simple"
+                bg="white"
+                boxShadow="md"
+                borderRadius="md"
+                minW="600px"
+              >
+                <Thead>
+                  <Tr>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Title</Th>
+                    <Th
+                      fontSize={{ base: "xs", md: "sm" }}
+                      display={{ base: "none", md: "table-cell" }}
+                    >
+                      Description
+                    </Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Due Date</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Status</Th>
+                    <Th fontSize={{ base: "xs", md: "sm" }}>Actions</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {tasks
+                    .filter((task) => task.status === status)
+                    .map((task) => (
+                      <Tr key={task._id}>
+                        <Td
+                          fontSize={{ base: "xs", md: "sm" }}
+                          maxW="150px"
+                          isTruncated
                         >
-                          {task.status}
-                        </Badge>
-                      </Td>
-                      <Td>
-                        <Flex gap={2}>
-                          <IconButton
-                            icon={<FaEdit />}
-                            colorScheme="blue"
-                            size="sm"
-                            onClick={() => handleEdit(task)}
-                          />
-                          <IconButton
-                            icon={<FaTrash />}
-                            colorScheme="red"
-                            size="sm"
-                            onClick={() => handleDelete(task)}
-                          />
-                        </Flex>
-                      </Td>
-                    </Tr>
-                  ))}
-              </Tbody>
-            </Table>
+                          {task.title}
+                        </Td>
+                        <Td
+                          display={{ base: "none", md: "table-cell" }}
+                          fontSize={{ base: "xs", md: "sm" }}
+                        >
+                          {Array.isArray(task.description) ? (
+                            <ul>
+                              {task.description.map((desc, idx) => (
+                                <li key={idx}>{desc}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            task.description || "N/A"
+                          )}
+                        </Td>
+                        <Td fontSize={{ base: "xs", md: "sm" }}>
+                          {task.dueDate
+                            ? new Date(task.dueDate).toLocaleDateString()
+                            : "No Due Date"}
+                        </Td>
+                        <Td>
+                          <Badge
+                            colorScheme={
+                              task.status === "Completed" ? "green" : "yellow"
+                            }
+                            size={{ base: "sm", md: "md" }}
+                          >
+                            {task.status}
+                          </Badge>
+                        </Td>
+                        <Td>
+                          <Flex gap={1}>
+                            <IconButton
+                              icon={<FaEdit />}
+                              colorScheme="blue"
+                              size={{ base: "xs", md: "sm" }}
+                              onClick={() => handleEdit(task)}
+                            />
+                            <IconButton
+                              icon={<FaTrash />}
+                              colorScheme="red"
+                              size={{ base: "xs", md: "sm" }}
+                              onClick={() => handleDelete(task)}
+                            />
+                          </Flex>
+                        </Td>
+                      </Tr>
+                    ))}
+                </Tbody>
+              </Table>
+            </Box>
           </Box>
         ))}
       </Box>
