@@ -58,7 +58,7 @@ export default function RegisterPage() {
       });
       console.log("Register FormData entries:", [...data.entries()]);
       const response = await axios.post(
-        "http://localhost:3001/register",
+        /*"http://localhost:3001/register"*/ "https://house-management-webapp-backend.onrender.com/register",
         data,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
