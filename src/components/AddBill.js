@@ -1,3 +1,5 @@
+// AddBill.js
+
 import { useState } from "react";
 import {
   Modal,
@@ -39,7 +41,6 @@ export default function AddBill({ isOpen, onClose, fetchBills }) {
       await axios.post("http://localhost:3001/addBills", {
         ...form,
         amount: Number(form.amount),
-        userId, // <-- add this
       });
       toast({
         title: "Success",

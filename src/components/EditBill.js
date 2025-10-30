@@ -1,3 +1,5 @@
+// EditBill.js
+
 import { useState, useEffect } from "react";
 import {
   Modal,
@@ -51,7 +53,6 @@ export default function EditBill({ isOpen, onClose, bill, fetchBills }) {
       await axios.put(`http://localhost:3001/updateBills/${bill._id}`, {
         ...form,
         amount: Number(form.amount),
-        userId, // <-- add this
       });
       toast({
         title: "Success",

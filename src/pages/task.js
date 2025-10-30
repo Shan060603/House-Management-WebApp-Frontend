@@ -1,3 +1,5 @@
+// task.js
+
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -119,7 +121,11 @@ export default function TaskPage() {
         </Link>
       ))}
       <Button
-        onClick={() => router.push("/login")}
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          router.push("/login");
+        }}
         bg="red.500"
         color="white"
         mt="auto"
@@ -199,14 +205,6 @@ export default function TaskPage() {
           <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
             Tasks
           </Text>
-          <Button
-            leftIcon={<FaPlus />}
-            colorScheme="blue"
-            onClick={onAddOpen}
-            size={{ base: "sm", md: "md" }}
-          >
-            Add Task
-          </Button>
         </Flex>
 
         {/* Tasks List */}

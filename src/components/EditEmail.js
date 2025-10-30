@@ -1,3 +1,5 @@
+// EditEmail.js
+
 import {
   Modal,
   ModalOverlay,

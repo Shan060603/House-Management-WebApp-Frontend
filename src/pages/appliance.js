@@ -1,3 +1,5 @@
+// appliance.js
+
 import { useEffect, useState, useCallback } from "react";
 import {
   Box,
@@ -135,7 +137,11 @@ export default function AppliancePage() {
         </Link>
       ))}
       <Button
-        onClick={() => router.push("/login")}
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          router.push("/login");
+        }}
         bg="red.500"
         color="white"
         mt="auto"

@@ -1,3 +1,5 @@
+// DeleteAppliance.js
+
 import {
   Button,
   Modal,
